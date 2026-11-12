@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Projeto Pet 🐾</title>
+    <style>
+        /* --- ESTILOS (CSS) --- */
+        :root {
+            --primary: #8A2BE2;
+            --primary-hover: #7B24C9;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Formulário */
+        .form-container {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .form-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        input, select {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Grid de Pets */
+        .pets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .pet-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .pet-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .pet-avatar {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .pet-name {
+            font-size: 22px;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .pet-info {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .btn-adotar {
+            background-color: #28a745;
+            padding: 8px 16px;
+        }
+
+        .btn-adotar:hover {
+            background-color: #218838;
+        }
+
+        .adotado-badge {
+            display: inline-block;
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .btn-remover {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .btn-remover:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🐾 Sistema de Adoção Pet</h1>
+            <p>Cadastre e adote animais de forma fácil</p>
+        </header>
+
+        <div class="form-container">
+            <h2>Cadastrar Novo Pet</h2>
+            <br>
+            <form id="petForm">
+                <div class="form-group">
+                    <input type="text" id="nome" placeholder="Nome do Pet" required>
+                    <select id="especie" required>
+                        <option value="" disabled selected>Escolha a Espécie</option>
+                        <option value="Cachorro">🐶 Cachorro</option>
+                        <option value="Gato">🐱 Gato</option>
+                        <option value="Pássaro">🦜 Pássaro</option>
+                        <option value="Outro">🐾 Outro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="raca" placeholder="Raça (Ex: SRD, Poodle)">
+                    <input type="number" id="idade" placeholder="Idade em anos" min="0" required>
+                </div>
+                <button type="submit">Adicionar Pet ao Sistema</button>
+            </form>
+        </div>
+
+        <div>
+            <h2>Pets Disponíveis</h2>
+            <br>
+            <div id="petsGrid" class="pets-grid">
+                <!-- Os cards dos pets aparecerão aqui -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- LÓGICA (JavaScript) --- */
+        
+        // Inicializa a lista de pets buscando do LocalStorage ou criando uma lista vazia
+        let pets = JSON.parse(localStorage.getItem('petsList')) || [];
+
+        // Elementos do DOM
+        const form = document.getElementById('petForm');
+        const grid = document.getElementById('petsGrid');
+
+        // Função para salvar no LocalStorage
+        function salvarDados() {
+            localStorage.setItem('petsList', JSON.stringify(pets));
+        }
+
+        // Função para definir o emoji baseado na espécie
+        function pegarEmoji(especie) {
+            switch(especie) {
+                case 'Cachorro': return '🐶';
+                case 'Gato': return '🐱';
+                case 'Pássaro': return '🦜';
+                default: return '🐾';
+            }
+        }
+
+        // Função para renderizar os pets na tela
+        function renderizarPets() {
+            grid.innerHTML = ''; // Limpa o grid
+
+            if (pets.length === 0) {
+                grid.innerHTML = '<p style="color: #666;">Nenhum pet cadastrado ainda. Seja o primeiro a cadastrar!</p>';
+                return;
+            }
+
+            pets.forEach(pet => {
+                const card = document.createElement('div');
+                card.className = 'pet-card';
+                
+                card.innerHTML = `
+                    <button class="btn-remover" onclick="removerPet(${pet.id})" title="Remover pet">✖</button>
+                    <div class="pet-avatar">${pegarEmoji(pet.especie)}</div>
+                    <h3 class="pet-name">${pet.nome}</h3>
+                    <p class="pet-info">${pet.especie} • ${pet.raca || 'Sem raça definida'} • ${pet.idade} anos</p>
+                    ${pet.adotado 
+                        ? `<span class="adotado-badge">❤️ Já Adotado</span>` 
+                        : `<button class="btn-adotar" onclick="adotarPet(${pet.id})">Adotar Pet</button>`
+                    }
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Evento de submit do formulário
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Evita recarregar a página
+
+            const novoPet = {
+                id: Date.now(), // Gera um ID único baseado no tempo
+                nome: document.getElementById('nome').value,
+                especie: document.getElementById('especie').value,
+                raca: document.getElementById('raca').value,
+                idade: document.getElementById('idade').value,
+                adotado: false
+            };
+
+            pets.push(novoPet);
+            salvarDados();
+            renderizarPets();
+            form.reset(); // Limpa os campos
+        });
+
+        // Função para adotar um pet
+        function adotarPet(id) {
+            const petIndex = pets.findIndex(p => p.id === id);
+            if (petIndex !== -1) {
+                pets[petIndex].adotado = true;
+                salvarDados();
+                renderizarPets();
+                
+                // Animação simples de confete (opcional)
+                alert(`Parabéns! Você adotou o ${pets[petIndex].nome}! 🎉`);
+            }
+        }
+
+        // Função para remover um pet da lista
+        function removerPet(id) {
+            if (confirm('Tem certeza que deseja remover este pet do sistema?')) {
+                pets = pets.filter(p => p.id !== id);
+                salvarDados();
+                renderizarPets();
+            }
+        }
+
+        // Renderiza os pets ao carregar a página
+        renderizarPets();
+    </script>
+</body>
+</html>
